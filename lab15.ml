@@ -138,7 +138,8 @@ Exercise 3. Redo the Eratosthenes sieve using the NativeLazyStreams
 module by completing the values and functions below. 
 ....................................................................*)
 
-let rec nats = lazy (Cons(0, smap succ nats)) ;;
+let rec nats =
+  lazy (Cons(0, smap ((+) 1) nats)) ;;
  
 let not_div_by (n : int) (m : int) : bool =
   not (m mod n = 0) ;;
@@ -146,7 +147,7 @@ let not_div_by (n : int) (m : int) : bool =
 let rec sieve s =  
   lazy (Cons(head s, sieve (sfilter (not_div_by (head s)) (tail s)))) ;;
 
-let primes = lazy (sieve (sieve (tail nats))) ;;
+let primes = sieve (tail (tail nats)) ;;
 
 (*....................................................................
 Exercise 4. How much further can you get computing primes now that the
@@ -158,6 +159,7 @@ let rec nth (s : 'a stream) (n : int) : 'a =
   if n = 0 then head s
   else nth (tail s) (n - 1) ;;
 
+nth primes 2000 ;;
 (*====================================================================
 Part 3: Series acceleration with infinite streams
 
