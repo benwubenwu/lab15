@@ -109,7 +109,9 @@ second argument. For example:
     - : float list = [1.; 2.; 4.; 8.; 16.; 32.; 64.; 128.; 256.; 512.]
 ....................................................................*)
 
-let geo _ = failwith "geo not implemented" ;;
+let rec geo a b = 
+  lazy (Cons(a, (geo (a *. b) b))) ;;
+
 
 (*====================================================================
 Part 2. Eratosthenes' sieve revisited
@@ -136,11 +138,15 @@ Exercise 3. Redo the Eratosthenes sieve using the NativeLazyStreams
 module by completing the values and functions below. 
 ....................................................................*)
 
-let rec nats = lazy (failwith "nats native not implemented") ;;
+let rec nats = lazy (Cons(0, smap succ nats)) ;;
  
-let rec sieve s = failwith "sieve native not implemented" ;;
+let not_div_by (n : int) (m : int) : bool =
+  not (m mod n = 0) ;;
 
-let primes = lazy (failwith "primes native not implemented") ;;
+let rec sieve s =  
+  lazy (Cons(head s, sieve (sfilter (not_div_by (head s)) (tail s)))) ;;
+
+let primes = lazy (sieve (sieve (tail nats))) ;;
 
 (*....................................................................
 Exercise 4. How much further can you get computing primes now that the
@@ -149,8 +155,10 @@ element in a stream, and use it to find out the 2000th prime.
 ....................................................................*)
 
 let rec nth (s : 'a stream) (n : int) : 'a =
-  failwith "nth native not implemented" ;;
+  if n = 0 then head s
+  else nth (tail s) (n - 1) ;;
 
+nth primes 2000 ;;
 
 (*====================================================================
 Part 3: Series acceleration with infinite streams
@@ -189,7 +197,7 @@ the input stream. For example:
 ....................................................................*)
   
 let average (s : float stream) : float stream =
-  failwith "average not implemented" ;;
+  smap2 (fun x y -> (x +. y) /. 2.0) s (tail s) ;;
 
 (* Now instead of using the stream of approximations in pi_sums, you
 can instead use the stream of averaged pi_sums, which converges much
@@ -218,7 +226,13 @@ generate approximations of pi.
 ....................................................................*)
    
 let aitken (s: float stream) : float stream =
-  failwith "aitken not implemented" ;;
+  smap2 (-.)
+         s 
+         (smap2 (/.)
+         (smap (fun x -> x *. x)
+               (smap2 (-.) s (tail s)))
+               (smap2 (+.)(smap2 (-.)s(smap (( *. ) 2.) (tail s)))
+               (tail  (tail s)))) ;;
 
 (*......................................................................
 Exercise 7: Testing the acceleration
@@ -229,13 +243,13 @@ get within different epsilons of pi.
     ---------------------------------------------------------
     epsilon  |  pi_sums  |  averaged method  |  aitken method 
     ---------------------------------------------------------
-    0.1      |           |                   |
+    0.1      |      19     |                   |
     ---------------------------------------------------------
-    0.01     |           |                   |
+    0.01     |      199     |                   |
     ---------------------------------------------------------
-    0.001    |           |                   |
+    0.001    |      1999     |                   |
     ---------------------------------------------------------
-    0.0001   |           |                   |
+    0.0001   |      19999     |                   |
     ---------------------------------------------------------
 ......................................................................*)
 
