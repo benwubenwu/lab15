@@ -158,7 +158,7 @@ let rec nth (s : 'a stream) (n : int) : 'a =
   if n = 0 then head s
   else nth (tail s) (n - 1) ;;
 
-nth primes 2000 ;;
+(* nth primes 2000 ;; *)
 
 (*====================================================================
 Part 3: Series acceleration with infinite streams
